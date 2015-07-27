@@ -3,6 +3,7 @@ package todotest.com.todoapp;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -38,6 +39,8 @@ public class taskTemplate implements Parcelable {
 
     public taskTemplate(Parcel in){
         name = in.readString();
+        Log.d("NAME", name+" " +in.dataAvail());
+        due_date = new GregorianCalendar();
         due_date.setTimeInMillis(in.readLong());
         completion = (in.readInt() == 1 ? true : false);
     }
@@ -116,7 +119,7 @@ public class taskTemplate implements Parcelable {
     }
     //This is how turn this class into something that can be saved
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
+    public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeString(name);
         parcel.writeLong(due_date.getTimeInMillis());
         parcel.writeInt(completion ? 1 : 0);

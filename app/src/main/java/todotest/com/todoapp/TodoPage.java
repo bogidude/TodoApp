@@ -3,6 +3,8 @@ package todotest.com.todoapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.internal.widget.AdapterViewCompat;
@@ -17,7 +19,13 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /*
@@ -25,6 +33,7 @@ import java.util.ArrayList;
  */
 public class TodoPage extends ActionBarActivity {
     static final String TASKS = "Users Tasks"; //for saving data in the SavedInstanceBundle thingie
+    private final String mFile = "todoappData";
     private ArrayList<taskTemplate> tasks;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +47,33 @@ public class TodoPage extends ActionBarActivity {
         //Set up task list
         if(savedInstanceState == null){//Never opened before
             Log.d("Save State", "No save state");
+
             tasks = new ArrayList<taskTemplate>();
+            try {
+                FileInputStream fis = openFileInput(mFile); //open file stream
+                byte[] Bytie = new byte[(int) fis.getChannel().size()];//hopefully we will never have a file that is more than INT_MAX bytes
+                fis.read(Bytie,0,Bytie.length);
+                fis.close(); //close file stream
+
+                Parcel mParcel = Parcel.obtain();
+                mParcel.unmarshall(Bytie,0,Bytie.length); //turn bytes back into a Parcel
+                mParcel.setDataPosition(0); //make sure to start reading items in the Parcel from the beginning
+                tasks = mParcel.readArrayList(taskTemplate.class.getClassLoader());//Should fill tasks?
+                mParcel.recycle(); //clears away parcel
+                Log.d("File Size",""+Bytie.length);
+            } catch (FileNotFoundException e) {
+                Log.e("File Opening", "File not found");
+                tasks = new ArrayList<taskTemplate>();
+                e.printStackTrace();
+            } catch (IOException e) {
+                Log.e("File Opening", "Failed to read from file");
+                e.printStackTrace();
+            }
+
         }else{ //Bring up the user's previous tasks
             tasks = savedInstanceState.getParcelableArrayList(TASKS);
         }
-        tasks.add(new taskTemplate("first"));//add a random task
+        //tasks.add(new taskTemplate("first"));//add a random task
         //Set up the visual portrayal of the design
         final ArrayAdapter<taskTemplate> taskAdapter = new ArrayAdapter<taskTemplate>(this,android.R.layout.simple_expandable_list_item_1, tasks);
         taskList.setAdapter(taskAdapter);
@@ -116,12 +147,30 @@ public class TodoPage extends ActionBarActivity {
     @Override
     public void onStop(){
         //Save data to internal file here!
+        Log.d("Saving data","Starting");
+        Parcel mParcel = Parcel.obtain();
+        mParcel.writeList(tasks);
+        byte[] mByte = mParcel.marshall();//turns the parcel into a byte array
+        mParcel.recycle(); //clean up the parcel
+        try { //Save task list to file on the phone
+            FileOutputStream fos = openFileOutput(mFile,Context.MODE_PRIVATE);
+            fos.write(mByte);
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.e("File Saving", "File not Found");
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("File Saving", "Falied to write to file");
+        }
+        Log.d("Saving data","Finished");
         super.onStop();
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // Save the user's current tasks
+
         savedInstanceState.putParcelableArrayList(TASKS, tasks);
         Log.d("Saving State", "Should have saved tasks");
         // Always call the superclass so it can save the view hierarchy state
