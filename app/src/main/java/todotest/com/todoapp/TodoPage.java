@@ -3,6 +3,7 @@ package todotest.com.todoapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -43,13 +45,11 @@ public class TodoPage extends ActionBarActivity {
         //Get View Objects
         ListView taskList = (ListView) findViewById(R.id.taskListView);
         EditText addTaskText = (EditText) findViewById(R.id.addTaskField);
-
         //Set up task list
-        if(savedInstanceState == null){//Never opened before
+        if(savedInstanceState == null){//Not already open
             Log.d("Save State", "No save state");
-
             tasks = new ArrayList<taskTemplate>();
-            try {
+            try {//try to open a file holding previously entered tasks
                 FileInputStream fis = openFileInput(mFile); //open file stream
                 byte[] Bytie = new byte[(int) fis.getChannel().size()];//hopefully we will never have a file that is more than INT_MAX bytes
                 fis.read(Bytie,0,Bytie.length);
@@ -63,19 +63,16 @@ public class TodoPage extends ActionBarActivity {
                 Log.d("File Size",""+Bytie.length);
             } catch (FileNotFoundException e) {
                 Log.e("File Opening", "File not found");
-                tasks = new ArrayList<taskTemplate>();
                 e.printStackTrace();
             } catch (IOException e) {
                 Log.e("File Opening", "Failed to read from file");
                 e.printStackTrace();
             }
-
-        }else{ //Bring up the user's previous tasks
+        }else{ //Bring up the user's tasks from previous session
             tasks = savedInstanceState.getParcelableArrayList(TASKS);
         }
-        //tasks.add(new taskTemplate("first"));//add a random task
         //Set up the visual portrayal of the design
-        final ArrayAdapter<taskTemplate> taskAdapter = new ArrayAdapter<taskTemplate>(this,android.R.layout.simple_expandable_list_item_1, tasks);
+        final TaskArrayAdapter taskAdapter = new TaskArrayAdapter(this,R.layout.min_task_item, tasks);
         taskList.setAdapter(taskAdapter);
         if (addTaskText != null) {
             addTaskText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -104,7 +101,18 @@ public class TodoPage extends ActionBarActivity {
         AdapterView.OnItemClickListener mItemClicked = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                tasks.get(position).toggle_comp();
+                Log.d("TESTING","Is it here "+ position);
+                CheckBox check = (CheckBox) view.findViewById(R.id.checkBox);
+                TextView name = (TextView) view.findViewById(R.id.taskName);
+                TextView date = (TextView) view.findViewById(R.id.taskDate);
+                check.setChecked(tasks.get(position).getCompletion());
+                if(tasks.get(position).getCompletion()){
+                    view.setBackgroundColor(Color.GRAY);
+                }else{
+                    view.setBackgroundColor(Color.WHITE);
+                }
+                taskAdapter.notifyDataSetChanged();
             }
         };
         //Handle items being long clicked (this should go to a task edit page)
@@ -116,10 +124,6 @@ public class TodoPage extends ActionBarActivity {
         };
         taskList.setOnItemClickListener(mItemClicked);
         taskList.setOnItemLongClickListener(mItemLongClicked);
-
-        TextView empty = new TextView(this);
-        empty.setText("Add tasks here");
-        taskList.setEmptyView(empty);
     }
 
     @Override

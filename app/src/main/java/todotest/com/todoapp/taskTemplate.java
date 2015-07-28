@@ -61,6 +61,10 @@ public class taskTemplate implements Parcelable {
     public String getName(){
         return name;
     }
+    //Get the completion status
+    public boolean getCompletion(){
+        return completion;
+    }
     //Complete Task
     public void complete(){
         completion = true;
@@ -69,8 +73,8 @@ public class taskTemplate implements Parcelable {
     public void toggle_comp(){
         completion = !completion;
     }
-    //Turns our task in to a string
-    public String toString(){
+    //Convert month number to string
+    public String convertMonth(){
         String month;
         switch(due_date.get(Calendar.MONTH)){
             case 1:
@@ -110,7 +114,11 @@ public class taskTemplate implements Parcelable {
                 month = "December";
                 break;
         }
-        return name +", Due by " +month+" " + due_date.get(Calendar.DATE) + ", "+ due_date.get(Calendar.YEAR);
+        return month;
+    }
+    //Turns our task in to a string
+    public String toString(){
+        return name +", Due by " +convertMonth()+" " + due_date.get(Calendar.DATE) + ", "+ due_date.get(Calendar.YEAR);
     }
     //Needed for Parcelable implementation. No idea what we would change this to so I'm just leaving it
     @Override
