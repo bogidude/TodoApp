@@ -98,7 +98,7 @@ public class TodoPage extends ActionBarActivity {
 
 
         //Handle items being clicked (this should expand the item...)
-        AdapterView.OnItemClickListener mItemClicked = new AdapterView.OnItemClickListener() {
+        /*AdapterView.OnItemClickListener mItemClicked = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 tasks.get(position).toggle_comp();
@@ -123,7 +123,7 @@ public class TodoPage extends ActionBarActivity {
             }
         };
         taskList.setOnItemClickListener(mItemClicked);
-        taskList.setOnItemLongClickListener(mItemLongClicked);
+        taskList.setOnItemLongClickListener(mItemLongClicked);*/
     }
 
     @Override

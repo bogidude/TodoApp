@@ -1,6 +1,7 @@
 package todotest.com.todoapp;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,11 +34,11 @@ public class TaskArrayAdapter extends ArrayAdapter<taskTemplate>{
             v = inflater.inflate(R.layout.min_task_item, null);
         }
         final taskTemplate i = tasks.get(position);
-        Log.d("TESTING","WONDERING "+ i.toString());
+        Log.d("TESTING", "WONDERING " + i.toString());
         if(i != null){
-            CheckBox check = (CheckBox) v.findViewById(R.id.checkBox);
-            TextView name = (TextView) v.findViewById(R.id.taskName);
-            TextView date = (TextView) v.findViewById(R.id.taskDate);
+            final CheckBox check = (CheckBox) v.findViewById(R.id.checkBox);
+            final TextView name = (TextView) v.findViewById(R.id.taskName);
+            final TextView date = (TextView) v.findViewById(R.id.taskDate);
             if(check != null){//Set up check box
                 check.setChecked(i.getCompletion());
                 /*check.setOnClickListener(new View.OnClickListener() {
@@ -56,6 +57,28 @@ public class TaskArrayAdapter extends ArrayAdapter<taskTemplate>{
                 GregorianCalendar dueDate = i.getDate();
                 date.setText("Due: " + i.convertMonth() + " " + i.getDate().get(Calendar.DATE) +", " + i.getDate().get(Calendar.YEAR));
             }
+            if (i.getCompletion()) {
+                date.setTextColor(Color.GRAY);
+                name.setTextColor(Color.GRAY);
+            } else {
+                date.setTextColor(Color.BLACK);
+                name.setTextColor(Color.BLACK);
+            }
+
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    i.toggle_comp();
+                    check.setChecked(i.getCompletion());
+                    if (i.getCompletion()) {
+                        date.setTextColor(Color.GRAY);
+                        name.setTextColor(Color.GRAY);
+                    } else {
+                        date.setTextColor(Color.BLACK);
+                        name.setTextColor(Color.BLACK);
+                    }
+                }
+            });
         }
         return v;
     }
